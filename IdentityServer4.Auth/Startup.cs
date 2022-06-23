@@ -11,7 +11,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
-using IdentityServer4.Configuration;
+using IdentityServer4.EntityFramework.DbContexts;
+using IdentityServer4.EntityFramework.Mappers;
+
 
 namespace IdentityServer4.Auth
 {
@@ -24,48 +26,43 @@ namespace IdentityServer4.Auth
         }
 
         public IConfiguration Configuration { get; }
-        //public IWebHostEnvironment Environment { get; }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
 
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
             string connectionString = Configuration.GetConnectionString("DefaultConnection");
 
-            services.AddIdentityServer()
+            //services.AddIdentityServer()
             // .AddInMemoryClients(IdentityConfiguration.Clients())
             //.AddInMemoryIdentityResources(IdentityConfiguration.IdentityResources())
             //.AddInMemoryApiResources(IdentityConfiguration.ApiResources())
             //.AddInMemoryApiScopes(IdentityConfiguration.ApiScopes)
+           // .AddTestUsers(IdentityConfiguration.Users().ToList());
+           // .AddDeveloperSigningCredential();
+
+
+             services.AddIdentityServer()
             .AddTestUsers(IdentityConfiguration.Users().ToList())
-            .AddDeveloperSigningCredential();
 
-
-            var builder = services.AddIdentityServer(options =>
+            .AddConfigurationStore(options =>
             {
-
-                options.Events.RaiseErrorEvents = true;
-                options.Events.RaiseInformationEvents = true;
-                options.Events.RaiseFailureEvents = true;
-                options.Events.RaiseSuccessEvents = true;
-                options.UserInteraction.LoginUrl = "/Account/Login";
-                options.UserInteraction.LogoutUrl = "/Home/Logout";
-                options.Authentication = new AuthenticationOptions()
-                {
-                    CookieLifetime = TimeSpan.FromHours(10), // ID server cookie timeout set to 10 hours
-                    CookieSlidingExpiration = true
-                };
+                options.ConfigureDbContext = b => b.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(migrationsAssembly));
             })
-           .AddConfigurationStore(options =>
-           {
-               options.ConfigureDbContext = b => b.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(migrationsAssembly));
-           })
-                .AddOperationalStore(options =>
-                {
-                    options.ConfigureDbContext = b => b.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(migrationsAssembly));
-                    options.EnableTokenCleanup = true;
-                });
+                 .AddOperationalStore(options =>
+                 {
+                     options.ConfigureDbContext = b => b.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(migrationsAssembly));
+                     options.EnableTokenCleanup = true;
+                 })
+            .AddDeveloperSigningCredential();
+            services.AddAuthentication()
+    .AddGoogle("Google", options =>
+    {
+        options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+
+        options.ClientId = "IdentityServer4_Google";
+        options.ClientSecret = "secret";
+        ;
+    });
             services.AddRazorPages();
 
             services.AddMvc();
@@ -96,13 +93,8 @@ namespace IdentityServer4.Auth
 
             app.UseRouting();
             app.UseIdentityServer();
-            //app.UseEndpoints(endpoints =>
-            //{
-            //    endpoints.MapGet("/", async context =>
-            //    {
-            //        await context.Response.WriteAsync("Hello World!");
-            //    });
-            //});
+
+            //  InitializeDatabase(app);
 
             app.UseEndpoints(endpoints =>
             {
@@ -110,6 +102,42 @@ namespace IdentityServer4.Auth
                 endpoints.MapRazorPages();
             });
 
+        }
+        private void InitializeDatabase(IApplicationBuilder app)
+        {
+            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+            {
+                serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
+
+                var context = serviceScope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
+                context.Database.Migrate();
+                if (!context.Clients.Any())
+                {
+                    foreach (var client in IdentityConfiguration.Clients())
+                    {
+                        context.Clients.Add(client.ToEntity());
+                    }
+                    context.SaveChanges();
+                }
+
+                if (!context.IdentityResources.Any())
+                {
+                    foreach (var resource in IdentityConfiguration.IdentityResources())
+                    {
+                        context.IdentityResources.Add(resource.ToEntity());
+                    }
+                    context.SaveChanges();
+                }
+
+                if (!context.ApiScopes.Any())
+                {
+                    foreach (var resource in IdentityConfiguration.ApiScopes)
+                    {
+                        context.ApiScopes.Add(resource.ToEntity());
+                    }
+                    context.SaveChanges();
+                }
+            }
         }
     }
 }

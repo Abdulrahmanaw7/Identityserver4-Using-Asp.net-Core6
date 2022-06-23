@@ -11,24 +11,21 @@ namespace IdentityServer4.Auth
             return new IdentityResource[]
             {
             new IdentityResources.OpenId(),
-        new IdentityResources.Profile()
-
-
-    };
+            new IdentityResources.Profile()};
         }
 
         public static IEnumerable<TestUser> Users()
         {
             return new[]
-              {
-        new TestUser
-        {
-            SubjectId = "1",
-            Username = "mail@filipekberg.se",
-            Password = "password"
+                      {
+                new TestUser
+                {
+                    SubjectId = "1",
+                    Username = "mail@filipekberg.se",
+                    Password = "password"
 
-        }
-            };
+                }
+                    };
         }
 
         internal static IEnumerable<Client> Clients()
@@ -82,21 +79,21 @@ namespace IdentityServer4.Auth
 
 
     };
-}
+        }
 
-public static IEnumerable<ApiScope> ApiScopes =>
-new List<ApiScope>
-{
+        public static IEnumerable<ApiScope> ApiScopes =>
+        new List<ApiScope>
+        {
         new ApiScope("IdentityServer4", "Identity Server4")
-};
+        };
 
-public static IEnumerable<ApiResource> ApiResources()
-{
-    return new[]
-    {
+        public static IEnumerable<ApiResource> ApiResources()
+        {
+            return new[]
+            {
                 new ApiResource("IdentityServer4", "Identity Server4")
             };
-}
+        }
 
     }
 }
