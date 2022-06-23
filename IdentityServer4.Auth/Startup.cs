@@ -37,28 +37,27 @@ namespace IdentityServer4.Auth
             //.AddInMemoryIdentityResources(IdentityConfiguration.IdentityResources())
             //.AddInMemoryApiResources(IdentityConfiguration.ApiResources())
             //.AddInMemoryApiScopes(IdentityConfiguration.ApiScopes)
-           // .AddTestUsers(IdentityConfiguration.Users().ToList());
-           // .AddDeveloperSigningCredential();
+            // .AddTestUsers(IdentityConfiguration.Users().ToList());
+            // .AddDeveloperSigningCredential();
 
 
-             services.AddIdentityServer()
-            .AddTestUsers(IdentityConfiguration.Users().ToList())
+            services.AddIdentityServer()
+           .AddTestUsers(IdentityConfiguration.Users().ToList())
 
-            .AddConfigurationStore(options =>
-            {
-                options.ConfigureDbContext = b => b.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(migrationsAssembly));
-            })
-                 .AddOperationalStore(options =>
-                 {
-                     options.ConfigureDbContext = b => b.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(migrationsAssembly));
-                     options.EnableTokenCleanup = true;
-                 })
-            .AddDeveloperSigningCredential();
+           .AddConfigurationStore(options =>
+           {
+               options.ConfigureDbContext = b => b.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(migrationsAssembly));
+           })
+                .AddOperationalStore(options =>
+                {
+                    options.ConfigureDbContext = b => b.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(migrationsAssembly));
+                    options.EnableTokenCleanup = true;
+                })
+           .AddDeveloperSigningCredential();
             services.AddAuthentication()
     .AddGoogle("Google", options =>
     {
         options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
-
         options.ClientId = "IdentityServer4_Google";
         options.ClientSecret = "secret";
         ;

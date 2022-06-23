@@ -35,14 +35,14 @@ namespace MyWeb
                 {
                     options.Authority = "https://localhost:44358";
 
-                    options.ClientId = "IdentityServer4_MVC_Code";
-                    options.ClientSecret = "secret";
-                    options.ResponseType = "code";
+                    options.ClientId = "IdentityServer4_MVC_Implicit";
+                    //options.ClientSecret = "secret";
+                    // options.ResponseType = "code";
                     options.RequireHttpsMetadata = false;
-                    options.ResponseType = "id_token code";
-                    options.Scope.Add("IdentityServer4");
-                    options.Scope.Add("offline_access");
-                    options.GetClaimsFromUserInfoEndpoint = true; 
+                    //options.ResponseType = "id_token token";
+                    // options.Scope.Add("IdentityServer4");
+                    //  options.Scope.Add("offline_access");
+                    options.GetClaimsFromUserInfoEndpoint = true;
                     options.SaveTokens = true;
                 });
 
