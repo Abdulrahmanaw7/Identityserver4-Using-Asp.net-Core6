@@ -1,5 +1,4 @@
 ﻿using IdentityModel.Client;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -9,6 +8,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace MyWeb.Controllers
 {
@@ -36,6 +38,13 @@ namespace MyWeb.Controllers
         public IActionResult Privacy()
         {
             return View();
+        }
+        public async Task Logout()
+        {
+            //    await HttpContext.Authentication.SignOutAsync("Cookies");
+            //    await HttpContext.Authentication.SignOutAsync("oidc");
+            await this.HttpContext.SignOutAsync("Cookies");
+            await this.HttpContext.SignOutAsync("oidc");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

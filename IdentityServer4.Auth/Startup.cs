@@ -9,6 +9,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Reflection;
+using Microsoft.EntityFrameworkCore;
+using IdentityServer4.Configuration;
 
 namespace IdentityServer4.Auth
 {
@@ -17,25 +20,57 @@ namespace IdentityServer4.Auth
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            // Environment=environment;    
         }
 
         public IConfiguration Configuration { get; }
+        //public IWebHostEnvironment Environment { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+
+            var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
+            string connectionString = Configuration.GetConnectionString("DefaultConnection");
+
             services.AddIdentityServer()
-            .AddInMemoryClients(IdentityConfiguration.Clients())
-           .AddInMemoryIdentityResources(IdentityConfiguration.IdentityResources())
-            .AddInMemoryApiResources(IdentityConfiguration.ApiResources())
-            .AddInMemoryApiScopes(IdentityConfiguration.ApiScopes)
+            // .AddInMemoryClients(IdentityConfiguration.Clients())
+            //.AddInMemoryIdentityResources(IdentityConfiguration.IdentityResources())
+            //.AddInMemoryApiResources(IdentityConfiguration.ApiResources())
+            //.AddInMemoryApiScopes(IdentityConfiguration.ApiScopes)
             .AddTestUsers(IdentityConfiguration.Users().ToList())
             .AddDeveloperSigningCredential();
+
+
+            var builder = services.AddIdentityServer(options =>
+            {
+
+                options.Events.RaiseErrorEvents = true;
+                options.Events.RaiseInformationEvents = true;
+                options.Events.RaiseFailureEvents = true;
+                options.Events.RaiseSuccessEvents = true;
+                options.UserInteraction.LoginUrl = "/Account/Login";
+                options.UserInteraction.LogoutUrl = "/Home/Logout";
+                options.Authentication = new AuthenticationOptions()
+                {
+                    CookieLifetime = TimeSpan.FromHours(10), // ID server cookie timeout set to 10 hours
+                    CookieSlidingExpiration = true
+                };
+            })
+           .AddConfigurationStore(options =>
+           {
+               options.ConfigureDbContext = b => b.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(migrationsAssembly));
+           })
+                .AddOperationalStore(options =>
+                {
+                    options.ConfigureDbContext = b => b.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(migrationsAssembly));
+                    options.EnableTokenCleanup = true;
+                });
             services.AddRazorPages();
 
             services.AddMvc();
 
-        
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -57,7 +92,7 @@ namespace IdentityServer4.Auth
 
             app.UseRouting();
 
-           // app.UseAuthorization();
+            // app.UseAuthorization();
 
             app.UseRouting();
             app.UseIdentityServer();
@@ -74,7 +109,7 @@ namespace IdentityServer4.Auth
                 endpoints.MapControllerRoute("Default", "{controller}/{action}/{id?}");
                 endpoints.MapRazorPages();
             });
-             
+
         }
     }
 }

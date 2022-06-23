@@ -43,11 +43,11 @@ namespace IdentityServer4.Auth
             AllowedGrantTypes = GrantTypes.ClientCredentials,
             AllowedScopes = new [] { "IdentityServer4" }
         },
-         new Client
+           new Client
         {
-            ClientId = "IdentityServer4_MVC",
+            ClientId = "IdentityServer4_MVC_Implicit",
             ClientSecrets = { new Secret("secret".Sha256()) },
-            AllowedGrantTypes = GrantTypes.Code,
+            AllowedGrantTypes = GrantTypes.Implicit,
             // where to redirect to after login
             RedirectUris = { "https://localhost:44329/signin-oidc" },
             // where to redirect to after logout
@@ -55,24 +55,48 @@ namespace IdentityServer4.Auth
               AllowedScopes = new [] {
                   IdentityServerConstants.StandardScopes.OpenId,
                   IdentityServerConstants.StandardScopes.Profile,
-                  "IdentityServer4" }
-        }
-            };
-        }
+                  "IdentityServer4" },
+              AllowAccessTokensViaBrowser = true
 
-        public static IEnumerable<ApiScope> ApiScopes =>
-    new List<ApiScope>
-    {
-        new ApiScope("IdentityServer4", "Identity Server4")
-    };
 
-        public static IEnumerable<ApiResource> ApiResources()
+        },
+         new Client
         {
-            return new[]
-            {
+            ClientId = "IdentityServer4_MVC_Code",
+            ClientSecrets = { new Secret("secret".Sha256()) },
+            AllowedGrantTypes = GrantTypes.Hybrid,
+            // where to redirect to after login
+            RedirectUris = { "https://localhost:44329/signin-oidc" },
+            // where to redirect to after logout
+            PostLogoutRedirectUris = { "https://localhost:44329/signout-callback-oidc" },
+              AllowedScopes = new [] {
+                  IdentityServerConstants.StandardScopes.OpenId,
+                  IdentityServerConstants.StandardScopes.Profile,
+                  IdentityServerConstants.StandardScopes.Email,
+                  "IdentityServer4" },
+              AllowOfflineAccess  =true,
+              AllowAccessTokensViaBrowser = true
+
+
+        }
+
+
+    };
+}
+
+public static IEnumerable<ApiScope> ApiScopes =>
+new List<ApiScope>
+{
+        new ApiScope("IdentityServer4", "Identity Server4")
+};
+
+public static IEnumerable<ApiResource> ApiResources()
+{
+    return new[]
+    {
                 new ApiResource("IdentityServer4", "Identity Server4")
             };
-        }
+}
 
     }
 }
