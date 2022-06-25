@@ -58,8 +58,8 @@ namespace IdentityServer4.Auth
     .AddGoogle("Google", options =>
     {
         options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
-        options.ClientId = "IdentityServer4_Google";
-        options.ClientSecret = "secret";
+        options.ClientId = "335161017494-ufrl5v4p5vhl20m3ffh0csl28nfcvs55.apps.googleusercontent.com";
+        options.ClientSecret = "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";
         ;
     });
             services.AddRazorPages();
